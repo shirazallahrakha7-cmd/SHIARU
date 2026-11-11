@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SHAIRU</title>
+  <style>
+    :root {
+      --black: #000;
+      --ink: #f4f4f5;
+      --muted: #a1a1aa;
+      --line: rgba(255, 255, 255, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+      color: var(--ink);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(125deg, #ff006e, #8338ec, #3a86ff, #06d6a0, #ffbe0b, #fb5607);
+      background-size: 360% 360%;
+      animation: drift 16s ease infinite;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 46vw;
+      height: 46vw;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.55;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background: #ff4d6d;
+      top: -12vw;
+      left: -8vw;
+      animation: floaty 12s ease-in-out infinite;
+    }
+
+    body::after {
+      background: #4cc9f0;
+      right: -10vw;
+      bottom: -14vw;
+      animation: floaty 14s ease-in-out infinite reverse;
+    }
+
+    @keyframes drift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(8vw, 6vh) scale(1.08); }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: min(420px, 100%);
+      display: grid;
+      gap: 14px;
+    }
+
+    .rim {
+      padding: 3px;
+      border-radius: 32px;
+      background: linear-gradient(120deg, #ff006e, #ffbe0b, #06d6a0, #3a86ff, #8338ec, #ff006e);
+      background-size: 300% 300%;
+      animation: drift 8s linear infinite;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+    }
+
+    .calc {
+      background: #000;
+      border-radius: 29px;
+      padding: 22px 18px 18px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .name {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.38em;
+      padding-left: 0.38em;
+      line-height: 1;
+      background: linear-gradient(90deg, #ff4d6d, #ffd60a, #4cc9f0, #80ff72);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .tag {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      padding-left: 2px;
+    }
+
+    .mode {
+      border: 1px solid var(--line);
+      background: #000;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+
+    .mode:hover, .mode:focus-visible { border-color: #4cc9f0; outline: none; }
+
+    .screen {
+      background: #000;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      margin-bottom: 12px;
+      min-height: 108px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+    }
+
+    .expr {
+      min-height: 18px;
+      color: #d4d4d8;
+      font-size: 13px;
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .result {
+      margin: 4px 0 0;
+      text-align: right;
+      font-size: 40px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      word-break: break-all;
+    }
+
+    .badges {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .badge {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: #000;
+      background: linear-gradient(90deg, #ffd60a, #4cc9f0);
+      border-radius: 999px;
+      padding: 2px 6px;
+      font-weight: 700;
+    }
+
+    .badge[hidden] { display: none; }
+
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #sci[hidden] { display: none; }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    button.key {
+      height: 58px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #000;
+      color: var(--ink);
+      font: inherit;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    button.key.sm { height: 46px; font-size: 14px; border-radius: 14px; }
+
+    button.key.op { color: #7dd3fc; }
+    button.key.fn { color: #fde68a; }
+    button.key.eq {
+      color: #fff;
+      background:
+        linear-gradient(#000, #000) padding-box,
+        linear-gradient(135deg, #ff006e, #ffbe0b, #06d6a0, #3a86ff) border-box;
+      border: 2px solid transparent;
+      font-weight: 700;
+    }
+
+    button.key:hover { border-color: rgba(255, 255, 255, 0.45); }
+    button.key:active { transform: scale(0.96); background: #111; }
+    button.key:focus-visible { outline: 2px solid #4cc9f0; outline-offset: 2px; }
+
+    .history {
+      background: rgba(0, 0, 0, 0.72);
+      border-radius: 20px;
+      padding: 14px 14px 8px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .history h2 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .history ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 140px;
+      overflow: auto;
+    }
+
+    .history li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .history li:hover { color: #ffd60a; }
+    .history .empty { color: #e4e4e7; cursor: default; }
+    .history .empty:hover { color: #e4e4e7; }
+
+    @media (max-width: 420px) {
+      .result { font-size: 32px; }
+      button.key { height: 52px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="rim">
+      <main class="calc" aria-label="SHAIRU calculator">
+        <header>
+          <div class="brand">
+            <h1 class="name">SHAIRU</h1>
+            <p class="tag">Calculator</p>
+          </div>
+          <button class="mode" id="modeBtn" type="button" aria-pressed="false">Scientific</button>
+        </header>
+
+        <section class="screen" aria-live="polite">
+          <div class="badges">
+            <span class="badge" id="memBadge" hidden>M</span>
+            <span class="badge" id="angBadge" hidden>DEG</span>
+          </div>
+          <div class="expr" id="expr"></div>
+          <p class="result" id="result">0</p>
+        </section>
+
+        <div class="tools" id="sci" hidden>
+          <button class="key sm fn" data-action="sin">sin</button>
+          <button class="key sm fn" data-action="cos">cos</button>
+          <button class="key sm fn" data-action="tan">tan</button>
+          <button class="key sm fn" data-action="sqrt">√</button>
+          <button class="key sm fn" data-action="ln">ln</button>
+          <button class="key sm fn" data-action="log">log</button>
+          <button class="key sm fn" data-action="square">x²</button>
+          <button class="key sm op" data-action="pow">xʸ</button>
+          <button class="key sm fn" data-action="pi">π</button>
+          <button class="key sm fn" data-action="e">e</button>
+          <button class="key sm fn" data-action="inv">1/x</button>
+          <button class="key sm fn" data-action="fact">n!</button>
+          <button class="key sm fn" data-action="abs">|x|</button>
+          <button class="key sm fn" data-action="angle" id="angleBtn">DEG</button>
+          <button class="key sm fn" data-action="mc">MC</button>
+          <button class="key sm fn" data-action="mr">MR</button>
+        </div>
+
+        <div class="keys">
+          <button class="key fn" data-action="ac">AC</button>
+          <button class="key fn" data-action="bs">DEL</button>
+          <button class="key fn" data-action="percent">%</button>
+          <button class="key op" data-action="div">÷</button>
+          <button class="key" data-action="digit" data-value="7">7</button>
+          <button class="key" data-action="digit" data-value="8">8</button>
+          <button class="key" data-action="digit" data-value="9">9</button>
+          <button class="key op" data-action="mul">×</button>
+          <button class="key" data-action="digit" data-value="4">4</button>
+          <button class="key" data-action="digit" data-value="5">5</button>
+          <button class="key" data-action="digit" data-value="6">6</button>
+          <button class="key op" data-action="sub">−</button>
+          <button class="key" data-action="digit" data-value="1">1</button>
+          <button class="key" data-action="digit" data-value="2">2</button>
+          <button class="key" data-action="digit" data-value="3">3</button>
+          <button class="key op" data-action="add">+</button>
+          <button class="key fn" data-action="sign">+/−</button>
+          <button class="key" data-action="digit" data-value="0">0</button>
+          <button class="key" data-action="dot">.</button>
+          <button class="key eq" data-action="eq">=</button>
+        </div>
+        <div class="tools" style="margin-top:8px;margin-bottom:0">
+          <button class="key sm fn" data-action="mp">M+</button>
+          <button class="key sm fn" data-action="mm">M−</button>
+          <button class="key sm fn" data-action="copy">Copy</button>
+          <button class="key sm fn" data-action="hist">History</button>
+        </div>
+      </main>
+    </div>
+
+    <section class="history" id="historyPanel" hidden>
+      <h2>HISTORY</h2>
+      <ul id="history"></ul>
+    </section>
+  </div>
+
+  <script>
+    const resultEl = document.getElementById("result");
+    const exprEl = document.getElementById("expr");
+    const memBadge = document.getElementById("memBadge");
+    const angBadge = document.getElementById("angBadge");
+    const angleBtn = document.getElementById("angleBtn");
+    const sci = document.getElementById("sci");
+    const modeBtn = document.getElementById("modeBtn");
+    const historyPanel = document.getElementById("historyPanel");
+    const historyEl = document.getElementById("history");
+
+    const symbols = { add: "+", sub: "−", mul: "×", div: "÷", pow: "^" };
+    const ops = { add: "+", sub: "-", mul: "*", div: "/", pow: "^" };
+
+    const state = {
+      display: "0",
+      acc: null,
+      op: null,
+      fresh: true,
+      error: false,
+      memory: 0,
+      degrees: true,
+      scientific: true,
+      history: []
+    };
+
+    function format(n) {
+      if (!Number.isFinite(n)) return "Error";
+      const abs = Math.abs(n);
+      if (abs !== 0 && (abs >= 1e12 || abs < 1e-9)) {
+        return n.toExponential(6).replace(/(\.\d*?)0+e/, "$1e").replace(".e", "e");
+      }
+      let text = Number(n.toPrecision(12)).toString();
+      if (text.length > 14 && text.includes(".")) {
+        text = Number(n.toPrecision(10)).toString();
+      }
+      return text;
+    }
+
+    function current() {
+      const n = Number(state.display);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function render() {
+      resultEl.textContent = state.display;
+      if (state.acc !== null && state.op) {
+        exprEl.textContent = format(state.acc) + " " + symbols[state.op];
+      } else {
+        exprEl.textContent = "";
+      }
+      memBadge.hidden = state.memory === 0;
+      angBadge.hidden = !state.scientific;
+      angBadge.textContent = state.degrees ? "DEG" : "RAD";
+      angleBtn.textContent = state.degrees ? "DEG" : "RAD";
+      sci.hidden = !state.scientific;
+      modeBtn.textContent = state.scientific ? "Scientific" : "Basic";
+      modeBtn.setAttribute("aria-pressed", String(state.scientific));
+
+      historyEl.innerHTML = "";
+      if (state.history.length === 0) {
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.textContent = "No calculations yet";
+        historyEl.appendChild(li);
+        return;
+      }
+      state.history.slice(0, 8).forEach((item) => {
+        const li = document.createElement("li");
+        const left = document.createElement("span");
+        const right = document.createElement("strong");
+        left.textContent = item.expr;
+        right.textContent = item.result;
+        li.append(left, right);
+        li.addEventListener("click", () => {
+          state.display = item.result;
+          state.fresh = true;
+          state.error = false;
+          state.acc = null;
+          state.op = null;
+          render();
+        });
+        historyEl.appendChild(li);
+      });
+    }
+
+    function fail() {
+      state.display = "Error";
+      state.error = true;
+      state.fresh = true;
+      state.acc = null;
+      state.op = null;
+      render();
+    }
+
+    function remember(expr, value) {
+      state.history.unshift({ expr, result: format(value) });
+    }
+
+    function clearAll() {
+      state.display = "0";
+      state.acc = null;
+      state.op = null;
+      state.fresh = true;
+      state.error = false;
+      render();
+    }
+
+    function inputDigit(d) {
+      if (state.error) clearAll();
+      if (state.fresh) {
+        state.display = d;
+        state.fresh = false;
+      } else if (state.display.replace("-", "").replace(".", "").length < 12) {
+        state.display = state.display === "0" ? d : state.display + d;
+      }
+      render();
+    }
+
+    function inputDot() {
+      if (state.error) clearAll();
+      if (state.fresh) {
+        state.display = "0.";
+        state.fresh = false;
+      } else if (!state.display.includes(".")) {
+        state.display += ".";
+      }
+      render();
+    }
+
+    function backspace() {
+      if (state.error) return clearAll();
+      if (state.fresh) return;
+      const next = state.display.slice(0, -1);
+      state.display = next === "" || next === "-" ? "0" : next;
+      if (state.display === "0") state.fresh = true;
+      render();
+    }
+
+    function compute(a, b, op) {
+      switch (op) {
+        case "add": return a + b;
+        case "sub": return a - b;
+        case "mul": return a * b;
+        case "div": return b === 0 ? NaN : a / b;
+        case "pow": return Math.pow(a, b);
+        default: return b;
+      }
+    }
+
+    function setOp(op) {
+      if (state.error) return;
+      const value = current();
+      if (!Number.isFinite(value)) return fail();
+      if (state.op && !state.fresh) {
+        const next = compute(state.acc, value, state.op);
+        if (!Number.isFinite(next)) return fail();
+        state.acc = next;
+        state.display = format(next);
+      } else {
+        state.acc = value;
+      }
+      state.op = op;
+      state.fresh = true;
+      render();
+    }
+
+    function equals() {
+      if (state.error || !state.op || state.acc === null) return;
+      const value = current();
+      const next = compute(state.acc, value, state.op);
+      if (!Number.isFinite(next)) return fail();
+      remember(format(state.acc) + " " + symbols[state.op] + " " + format(value), next);
+      state.display = format(next);
+      state.acc = null;
+      state.op = null;
+      state.fresh = true;
+      render();
+    }
+
+    function percent() {
+      if (state.error) return;
+      const value = current();
+      if (!Number.isFinite(value)) return fail();
+      let next = value / 100;
+      if ((state.op === "add" || state.op === "sub") && state.acc !== null) {
+        next = state.acc * value / 100;
+      }
+      state.display = format(next);
+      state.fresh = true;
+      render();
+    }
+
+    function applyUnary(label, fn) {
+      if (state.error) return;
+      const value = current();
+      const next = fn(value);
+      if (!Number.isFinite(next)) return fail();
+      remember(label + "(" + format(value) + ")", next);
+      state.display = format(next);
+      state.fresh = true;
+      render();
+    }
+
+    function toRad(n) {
+      return state.degrees ? (n * Math.PI) / 180 : n;
+    }
+
+    function factorial(n) {
+      if (n < 0 || !Number.isInteger(n) || n > 170) return NaN;
+      let out = 1;
+      for (let i = 2; i <= n; i++) out *= i;
+      return out;
+    }
+
+    function pushConstant(n, label) {
+      if (state.error) clearAll();
+      state.display = format(n);
+      state.fresh = true;
+      exprEl.textContent = label;
+      render();
+      exprEl.textContent = label;
+    }
+
+    async function copyResult() {
+      if (state.display === "Error") return;
+      try {
+        await navigator.clipboard.writeText(state.display);
+        const prev = exprEl.textContent;
+        exprEl.textContent = "Copied";
+        setTimeout(() => {
+          if (exprEl.textContent === "Copied") exprEl.textContent = prev;
+        }, 800);
+      } catch (err) {
+        exprEl.textContent = "Copy blocked";
+      }
+    }
+
+    function onAction(action, value) {
+      switch (action) {
+        case "digit": return inputDigit(value);
+        case "dot": return inputDot();
+        case "ac": return clearAll();
+        case "bs": return backspace();
+        case "percent": return percent();
+        case "sign":
+          if (state.error) return;
+          if (state.display === "0") return;
+          state.display = state.display.startsWith("-")
+            ? state.display.slice(1)
+            : "-" + state.display;
+          return render();
+        case "add":
+        case "sub":
+        case "mul":
+        case "div":
+        case "pow":
+          return setOp(action);
+        case "eq": return equals();
+        case "sqrt": return applyUnary("√", (n) => (n < 0 ? NaN : Math.sqrt(n)));
+        case "square": return applyUnary("sqr", (n) => n * n);
+        case "inv": return applyUnary("1/", (n) => (n === 0 ? NaN : 1 / n));
+        case "abs": return applyUnary("abs", Math.abs);
+        case "ln": return applyUnary("ln", (n) => (n <= 0 ? NaN : Math.log(n)));
+        case "log": return applyUnary("log", (n) => (n <= 0 ? NaN : Math.log10(n)));
+        case "sin": return applyUnary("sin", (n) => Math.sin(toRad(n)));
+        case "cos": return applyUnary("cos", (n) => Math.cos(toRad(n)));
+        case "tan": return applyUnary("tan", (n) => {
+          const r = toRad(n);
+          const t = Math.tan(r);
+          if (Math.abs(Math.cos(r)) < 1e-12) return NaN;
+          return t;
+        });
+        case "fact": return applyUnary("fact", factorial);
+        case "pi": return pushConstant(Math.PI, "π");
+        case "e": return pushConstant(Math.E, "e");
+        case "angle":
+          state.degrees = !state.degrees;
+          return render();
+        case "mc":
+          state.memory = 0;
+          return render();
+        case "mr":
+          if (state.error) clearAll();
+          state.display = format(state.memory);
+          state.fresh = true;
+          return render();
+        case "mp":
+          if (state.error) return;
+          state.memory += current();
+          return render();
+        case "mm":
+          if (state.error) return;
+          state.memory -= current();
+          return render();
+        case "copy": return copyResult();
+        case "hist":
+          historyPanel.hidden = !historyPanel.hidden;
+          return;
+        default: break;
+      }
+    }
+
+    document.querySelector(".calc").addEventListener("click", (event) => {
+      const btn = event.target.closest("button[data-action]");
+      if (!btn) return;
+      onAction(btn.dataset.action, btn.dataset.value);
+    });
+
+    modeBtn.addEventListener("click", () => {
+      state.scientific = !state.scientific;
+      render();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const k = event.key;
+      if (/^[0-9]$/.test(k)) { event.preventDefault(); return inputDigit(k); }
+      if (k === ".") { event.preventDefault(); return inputDot(); }
+      if (k === "Enter" || k === "=") { event.preventDefault(); return equals(); }
+      if (k === "Escape") { event.preventDefault(); return clearAll(); }
+      if (k === "Backspace") { event.preventDefault(); return backspace(); }
+      if (k === "%") { event.preventDefault(); return percent(); }
+      if (k === "+") return setOp("add");
+      if (k === "-") return setOp("sub");
+      if (k === "*") return setOp("mul");
+      if (k === "/") { event.preventDefault(); return setOp("div"); }
+      if (k === "^") return setOp("pow");
+    });
+
+    render();
+  </script>
+</body>
+</html>
